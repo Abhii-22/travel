@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import busRoutes from "./routes/busRoutes.js";
+import busManagementRoutes from "./routes/busManagementRoutes.js";
 import carRoutes from "./routes/carRoutes.js";
 
 dotenv.config();
@@ -19,6 +20,7 @@ mongoose
 
 // Example test route
 app.use("/api/bus", busRoutes);
+app.use("/api/bus-management", busManagementRoutes);
 app.use("/api/car", carRoutes);
 
 app.get("/", (req, res) => {

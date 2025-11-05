@@ -32,268 +32,35 @@ const BusBooking = () => {
   // State for tracking available seats per bus
   const [availableSeats, setAvailableSeats] = useState({});
 
-  // Enhanced mock bus data with more details
-  const mockBuses = [
-    {
-      id: 1,
-      busName: "Express Travels",
-      busNumber: "EXP-2024",
-      fromLocation: "Delhi",
-      toLocation: "Mumbai",
-      departureTime: "08:00 AM",
-      arrivalTime: "08:00 PM",
-      price: 1200,
-      totalSeats: 40,
-      availableSeats: 25,
-      type: "AC Sleeper",
-      rating: 4.2,
-      amenities: ["WiFi", "Charging Point", "Blanket", "Water Bottle", "TV", "Emergency Exit"],
-      operator: "Express Travels Pvt Ltd",
-      cancellationPolicy: "Free cancellation before 24 hours",
-      insurance: "Travel insurance included"
-    },
-    {
-      id: 2,
-      busName: "Royal Express",
-      busNumber: "ROY-3030",
-      fromLocation: "Delhi",
-      toLocation: "Mumbai",
-      departureTime: "10:00 AM",
-      arrivalTime: "10:00 PM",
-      price: 1000,
-      totalSeats: 35,
-      availableSeats: 18,
-      type: "Non-AC Seater",
-      rating: 3.8,
-      amenities: ["Charging Point", "Water Bottle", "Emergency Exit"],
-      operator: "Royal Tours & Travels",
-      cancellationPolicy: "10% cancellation fee",
-      insurance: "Basic insurance"
-    },
-    {
-      id: 3,
-      busName: "Super Deluxe",
-      busNumber: "SUP-4040",
-      fromLocation: "Delhi",
-      toLocation: "Mumbai",
-      departureTime: "02:00 PM",
-      arrivalTime: "02:00 AM",
-      price: 1500,
-      totalSeats: 30,
-      availableSeats: 12,
-      type: "AC Seater",
-      rating: 4.5,
-      amenities: ["WiFi", "Charging Point", "Blanket", "Water Bottle", "TV", "Snacks", "Emergency Exit"],
-      operator: "Super Deluxe Bus Service",
-      cancellationPolicy: "Free cancellation before 12 hours",
-      insurance: "Comprehensive insurance"
-    },
-    {
-      id: 4,
-      busName: "Sharma Travels",
-      busNumber: "SHA-5050",
-      fromLocation: "Bangalore",
-      toLocation: "Chennai",
-      departureTime: "06:00 AM",
-      arrivalTime: "02:00 PM",
-      price: 800,
-      totalSeats: 45,
-      availableSeats: 30,
-      type: "AC Semi-Sleeper",
-      rating: 4.0,
-      amenities: ["WiFi", "Charging Point", "Water Bottle", "TV"],
-      operator: "Sharma Travels Co.",
-      cancellationPolicy: "5% cancellation fee",
-      insurance: "Basic insurance"
-    },
-    {
-      id: 5,
-      busName: "GreenLine Express",
-      busNumber: "GRE-6060",
-      fromLocation: "Bangalore",
-      toLocation: "Chennai",
-      departureTime: "09:00 AM",
-      arrivalTime: "05:00 PM",
-      price: 950,
-      totalSeats: 40,
-      availableSeats: 22,
-      type: "Volvo AC",
-      rating: 4.3,
-      amenities: ["WiFi", "Charging Point", "Blanket", "Water Bottle", "TV", "Snacks"],
-      operator: "GreenLine Transport",
-      cancellationPolicy: "Free cancellation before 6 hours",
-      insurance: "Premium insurance"
-    },
-    {
-      id: 6,
-      busName: "Patel Tours",
-      busNumber: "PAT-7070",
-      fromLocation: "Kolkata",
-      toLocation: "Hyderabad",
-      departureTime: "07:30 AM",
-      arrivalTime: "09:30 PM",
-      price: 1100,
-      totalSeats: 38,
-      availableSeats: 15,
-      type: "AC Sleeper",
-      rating: 4.1,
-      amenities: ["WiFi", "Charging Point", "Blanket", "Water Bottle", "Emergency Exit"],
-      operator: "Patel Tours & Travels",
-      cancellationPolicy: "15% cancellation fee",
-      insurance: "Standard insurance"
-    },
-    {
-      id: 7,
-      busName: "RedBus Express",
-      busNumber: "RED-8080",
-      fromLocation: "Kolkata",
-      toLocation: "Hyderabad",
-      departureTime: "11:00 AM",
-      arrivalTime: "01:00 AM",
-      price: 1300,
-      totalSeats: 35,
-      availableSeats: 8,
-      type: "AC Seater",
-      rating: 4.6,
-      amenities: ["WiFi", "Charging Point", "Blanket", "Water Bottle", "TV", "Snacks", "Reading Light"],
-      operator: "RedBus Premium",
-      cancellationPolicy: "Free cancellation before 24 hours",
-      insurance: "Comprehensive insurance"
-    },
-    {
-      id: 8,
-      busName: "Yatra Travels",
-      busNumber: "YAT-9090",
-      fromLocation: "Jaipur",
-      toLocation: "Ahmedabad",
-      departureTime: "05:00 AM",
-      arrivalTime: "11:00 AM",
-      price: 600,
-      totalSeats: 42,
-      availableSeats: 28,
-      type: "Non-AC Seater",
-      rating: 3.5,
-      amenities: ["Charging Point", "Water Bottle"],
-      operator: "Yatra Bus Service",
-      cancellationPolicy: "20% cancellation fee",
-      insurance: "Basic insurance"
-    },
-    {
-      id: 9,
-      busName: "Golden Lines",
-      busNumber: "GOL-1010",
-      fromLocation: "Jaipur",
-      toLocation: "Ahmedabad",
-      departureTime: "02:00 PM",
-      arrivalTime: "08:00 PM",
-      price: 750,
-      totalSeats: 36,
-      availableSeats: 20,
-      type: "AC Semi-Sleeper",
-      rating: 3.9,
-      amenities: ["WiFi", "Charging Point", "Water Bottle", "TV"],
-      operator: "Golden Lines Transport",
-      cancellationPolicy: "10% cancellation fee",
-      insurance: "Standard insurance"
-    },
-    {
-      id: 10,
-      busName: "FastTrack Travels",
-      busNumber: "FAS-1111",
-      fromLocation: "Pune",
-      toLocation: "Goa",
-      departureTime: "04:00 AM",
-      arrivalTime: "10:00 AM",
-      price: 900,
-      totalSeats: 32,
-      availableSeats: 18,
-      type: "AC Sleeper",
-      rating: 4.2,
-      amenities: ["WiFi", "Charging Point", "Blanket", "Water Bottle", "TV"],
-      operator: "FastTrack Bus Service",
-      cancellationPolicy: "Free cancellation before 12 hours",
-      insurance: "Premium insurance"
-    },
-    {
-      id: 11,
-      busName: "Oceanic Express",
-      busNumber: "OCE-1212",
-      fromLocation: "Pune",
-      toLocation: "Goa",
-      departureTime: "08:30 AM",
-      arrivalTime: "02:30 PM",
-      price: 1100,
-      totalSeats: 28,
-      availableSeats: 10,
-      type: "Volvo AC",
-      rating: 4.7,
-      amenities: ["WiFi", "Charging Point", "Blanket", "Water Bottle", "TV", "Snacks", "Reading Light", "Emergency Exit"],
-      operator: "Oceanic Premium Transport",
-      cancellationPolicy: "Free cancellation before 24 hours",
-      insurance: "Comprehensive insurance"
-    },
-    {
-      id: 12,
-      busName: "Mountain Routes",
-      busNumber: "MNT-1313",
-      fromLocation: "Chandigarh",
-      toLocation: "Manali",
-      departureTime: "06:00 AM",
-      arrivalTime: "04:00 PM",
-      price: 800,
-      totalSeats: 25,
-      availableSeats: 12,
-      type: "Non-AC Seater",
-      rating: 3.7,
-      amenities: ["Charging Point", "Water Bottle", "Emergency Exit"],
-      operator: "Mountain Routes Travel",
-      cancellationPolicy: "15% cancellation fee",
-      insurance: "Hill area insurance"
-    },
-    {
-      id: 13,
-      busName: "Himalayan Travels",
-      busNumber: "HIM-1414",
-      fromLocation: "Chandigarh",
-      toLocation: "Manali",
-      departureTime: "09:00 AM",
-      arrivalTime: "07:00 PM",
-      price: 1000,
-      totalSeats: 30,
-      availableSeats: 5,
-      type: "AC Semi-Sleeper",
-      rating: 4.0,
-      amenities: ["WiFi", "Charging Point", "Blanket", "Water Bottle", "Emergency Exit"],
-      operator: "Himalayan Bus Service",
-      cancellationPolicy: "No cancellation",
-      insurance: "Hill area comprehensive insurance"
-    }
-  ];
-
-  // Load admin-added buses from localStorage
+  // Load admin-added buses from database
   useEffect(() => {
-    const storedBuses = localStorage.getItem('adminBuses');
-    if (storedBuses && JSON.parse(storedBuses).length > 0) {
-      const adminBuses = JSON.parse(storedBuses);
-      setBuses(adminBuses);
-      
-      // Initialize available seats with admin bus data
-      const initialAvailableSeats = {};
-      adminBuses.forEach(bus => {
-        initialAvailableSeats[bus.busNumber] = bus.availableSeats;
-      });
-      setAvailableSeats(initialAvailableSeats);
-    } else {
-      // Use mock buses if no admin buses exist
-      setBuses(mockBuses);
-      
-      // Initialize available seats with mock data
-      const initialAvailableSeats = {};
-      mockBuses.forEach(bus => {
-        initialAvailableSeats[bus.busNumber] = bus.availableSeats;
-      });
-      setAvailableSeats(initialAvailableSeats);
-    }
+    const fetchBusesFromDatabase = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/bus-management/all');
+        if (response.ok) {
+          const data = await response.json();
+          const adminBuses = data.buses || [];
+          setBuses(adminBuses);
+          
+          // Initialize available seats with admin bus data
+          const initialAvailableSeats = {};
+          adminBuses.forEach(bus => {
+            initialAvailableSeats[bus.busNumber] = bus.availableSeats;
+          });
+          setAvailableSeats(initialAvailableSeats);
+        } else {
+          // If no buses in database, set empty array
+          setBuses([]);
+          setAvailableSeats({});
+        }
+      } catch (error) {
+        console.error('Error fetching buses from database:', error);
+        setBuses([]);
+        setAvailableSeats({});
+      }
+    };
+
+    fetchBusesFromDatabase();
   }, []);
 
   const handleSearchChange = (e) => {
@@ -337,31 +104,22 @@ const BusBooking = () => {
     }
   };
 
-  const handleFilterChange = (e) => {
-    const newFilterOptions = { ...filterOptions, [e.target.name]: e.target.value };
+  const handleFilterChange = (newFilterOptions) => {
     setFilterOptions(newFilterOptions);
     
     // Apply filters immediately when filter options change
     console.log("Filter changed:", newFilterOptions);
     
-    // If we have buses displayed, apply filters to them
+    // Only apply filters if we have buses displayed
     if (buses.length > 0) {
-      const filteredBuses = applyFilters(mockBuses.filter(bus => 
-        bus.fromLocation.toLowerCase().includes(searchData.fromLocation.toLowerCase()) &&
-        bus.toLocation.toLowerCase().includes(searchData.toLocation.toLowerCase())
-      ));
-      setBuses(filteredBuses);
-    } else {
-      // If no search has been done, apply filters to all buses
-      const filteredBuses = applyFilters(mockBuses);
+      const filteredBuses = applyFilters(buses);
       setBuses(filteredBuses);
     }
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
     console.log("Search data:", searchData);
-    console.log("Mock buses:", mockBuses);
     
     // Validate search data
     if (!searchData.fromLocation || !searchData.toLocation || !searchData.travelDate) {
@@ -369,34 +127,36 @@ const BusBooking = () => {
       return;
     }
     
-    // Convert search terms to lowercase for case-insensitive comparison
-    const fromLower = searchData.fromLocation.toLowerCase().trim();
-    const toLower = searchData.toLocation.toLowerCase().trim();
-    
-    let filteredBuses = mockBuses.filter(bus => {
-      const busFromLower = bus.fromLocation.toLowerCase();
-      const busToLower = bus.toLocation.toLowerCase();
+    try {
+      // Search buses from database
+      const response = await fetch(`http://localhost:5000/api/bus-management/search/${searchData.fromLocation}/${searchData.toLocation}`);
       
-      // Check if bus locations contain the search terms (case-insensitive)
-      const fromMatch = busFromLower.includes(fromLower);
-      const toMatch = busToLower.includes(toLower);
-      
-      return fromMatch && toMatch;
-    });
-    
-    console.log("Filtered buses before filters:", filteredBuses);
-    console.log("Search terms:", { fromLower, toLower });
-    
-    // Apply filters
-    filteredBuses = applyFilters(filteredBuses);
-    console.log("Filtered buses after filters:", filteredBuses);
-    
-    setBuses(filteredBuses);
-    
-    if (filteredBuses.length === 0) {
-      alert(`No buses found for route: ${searchData.fromLocation} → ${searchData.toLocation}\n\nTry "Show All Buses" to see available routes.`);
-    } else {
-      console.log(`Found ${filteredBuses.length} buses`);
+      if (response.ok) {
+        const data = await response.json();
+        const searchResults = data.buses || [];
+        
+        // Apply filters to search results
+        const filteredBuses = applyFilters(searchResults);
+        setBuses(filteredBuses);
+        
+        // Initialize available seats for search results
+        const initialAvailableSeats = {};
+        filteredBuses.forEach(bus => {
+          initialAvailableSeats[bus.busNumber] = bus.availableSeats;
+        });
+        setAvailableSeats(initialAvailableSeats);
+        
+        console.log(`Found ${filteredBuses.length} buses matching search criteria`);
+        
+      } else {
+        setBuses([]);
+        setAvailableSeats({});
+        console.log("No buses found matching search criteria");
+      }
+    } catch (error) {
+      console.error("Error searching buses:", error);
+      setBuses([]);
+      setAvailableSeats({});
     }
   };
 
@@ -442,22 +202,69 @@ const BusBooking = () => {
     return filtered;
   };
 
-  const handleShowAll = () => {
+  const handleShowAll = async () => {
     console.log("Showing all buses");
-    setBuses(mockBuses);
-    // Reset filters when showing all
-    setFilterOptions({
-      priceRange: "all",
-      busType: "all",
-      departureTime: "all",
-      rating: "all"
-    });
-    // Also reset search data
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/bus-management/all');
+      if (response.ok) {
+        const data = await response.json();
+        const allBuses = data.buses || [];
+        
+        // Apply filters to all buses
+        const filteredBuses = applyFilters(allBuses);
+        setBuses(filteredBuses);
+        
+        // Initialize available seats
+        const initialAvailableSeats = {};
+        filteredBuses.forEach(bus => {
+          initialAvailableSeats[bus.busNumber] = bus.availableSeats;
+        });
+        setAvailableSeats(initialAvailableSeats);
+        
+        // Reset filters when showing all
+        setFilterOptions({
+          priceRange: "all",
+          busType: "all",
+          departureTime: "all",
+          rating: "all"
+        });
+        
+      } else {
+        setBuses([]);
+        setAvailableSeats({});
+      }
+    } catch (error) {
+      console.error("Error fetching all buses:", error);
+      setBuses([]);
+      setAvailableSeats({});
+    }
     setSearchData({
       fromLocation: "",
       toLocation: "",
       travelDate: ""
     });
+  };
+
+  // Refresh buses from database
+  const refreshBuses = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/bus-management/all');
+      if (response.ok) {
+        const data = await response.json();
+        const allBuses = data.buses || [];
+        setBuses(allBuses);
+        
+        // Initialize available seats
+        const initialAvailableSeats = {};
+        allBuses.forEach(bus => {
+          initialAvailableSeats[bus.busNumber] = bus.availableSeats;
+        });
+        setAvailableSeats(initialAvailableSeats);
+      }
+    } catch (error) {
+      console.error("Error refreshing buses:", error);
+    }
   };
 
   const handleBusSelect = async (bus) => {
@@ -968,11 +775,12 @@ const BusBooking = () => {
           <div className="buttons-container">
             <button type="submit" className="search-btn">Search Buses</button>
             <button type="button" onClick={handleShowAll} className="show-all-btn">Show All Buses</button>
+            <button type="button" onClick={refreshBuses} className="refresh-btn">🔄 Refresh</button>
           </div>
         </form>
       </div>
 
-      {(buses.length > 0 || mockBuses.length > 0) && !showSeatLayout && (
+      {buses.length > 0 && !showSeatLayout && (
         <>
           <div className="filter-section">
             <h3>Filter Buses</h3>
@@ -1019,8 +827,8 @@ const BusBooking = () => {
           </div>
           
           <div className="bus-list">
-            <h3>Available Buses ({(buses.length > 0 ? buses : mockBuses).length} buses found)</h3>
-            {(buses.length > 0 ? buses : mockBuses).map(bus => (
+            <h3>Available Buses ({buses.length} buses found)</h3>
+            {buses.map(bus => (
               <div key={bus.id} className="bus-card">
                 <div className="bus-info">
                   <div className="bus-header">
@@ -1071,6 +879,13 @@ const BusBooking = () => {
             ))}
           </div>
         </>
+      )}
+
+      {!showSeatLayout && buses.length === 0 && (
+        <div className="no-buses">
+          <h3>No buses available</h3>
+          <p>Please add buses through the admin dashboard or try different search criteria.</p>
+        </div>
       )}
 
       {showSeatLayout && selectedBus && (
