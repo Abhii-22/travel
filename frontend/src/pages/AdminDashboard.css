@@ -17,6 +17,31 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
+.header-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.refresh-btn {
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: white;
+  transform: translateY(-2px);
+}
+
 .admin-header h1 {
   margin: 0;
   font-size: 2.5rem;
@@ -344,10 +369,18 @@
   
   .admin-header {
     padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
   }
   
   .admin-header h1 {
     font-size: 1.8rem;
+  }
+  
+  .header-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
   }
   
   .add-bus-form-container {
@@ -386,5 +419,208 @@
   
   .bus-actions {
     justify-content: center;
+  }
+}
+
+/* Bookings Section Styles */
+.bookings-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.bookings-section h2 {
+  color: #333;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.no-bookings {
+  text-align: center;
+  color: #666;
+  font-size: 1.2rem;
+  padding: 3rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 2px dashed #ddd;
+}
+
+.loading-indicator {
+  text-align: center;
+  color: #667eea;
+  font-size: 1.2rem;
+  padding: 3rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 2px dashed #667eea;
+}
+
+.loading-indicator p {
+  margin: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.bookings-by-date {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.date-section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border-left: 5px solid #667eea;
+}
+
+.date-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.date-header h3 {
+  color: #667eea;
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.booking-count {
+  background: #667eea;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.bus-section {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e9ecef;
+}
+
+.bus-header-info h4 {
+  color: #333;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.route-info {
+  color: #666;
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+.seats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.seat-booking-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.seat-booking-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.seat-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.seat-number {
+  background: #667eea;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.price {
+  color: #28a745;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.passenger-info p {
+  margin: 0.3rem 0;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.passenger-info strong {
+  color: #333;
+}
+
+.booking-actions {
+  margin-top: 1rem;
+  text-align: right;
+}
+
+.delete-booking-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.delete-booking-btn:hover {
+  background: #c82333;
+}
+
+/* Responsive Design for Bookings */
+@media (max-width: 768px) {
+  .bookings-section {
+    padding: 1.5rem;
+  }
+  
+  .date-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .seats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .seat-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
   }
 }

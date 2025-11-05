@@ -3,7 +3,9 @@ import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [buses, setBuses] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [showAddBusForm, setShowAddBusForm] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     busName: '',
     busNumber: '',
@@ -20,13 +22,61 @@ const AdminDashboard = () => {
     cancellationPolicy: 'Free cancellation before 24 hours'
   });
 
-  // Load buses from localStorage on component mount
+  // Load buses and bookings from localStorage and database on component mount
   useEffect(() => {
     const storedBuses = localStorage.getItem('adminBuses');
     if (storedBuses) {
       setBuses(JSON.parse(storedBuses));
     }
+    
+    // Fetch bookings from database
+    fetchBookingsFromDatabase();
   }, []);
+
+  // Function to fetch bookings from database
+  const fetchBookingsFromDatabase = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:5000/api/bus/bookings");
+      if (response.ok) {
+        const data = await response.json();
+        // Transform database data to match frontend format
+        const transformedBookings = data.bookings.map(booking => ({
+          id: booking._id,
+          name: booking.name,
+          phone: booking.phone,
+          email: booking.email,
+          busName: booking.busName,
+          busNumber: booking.busNumber,
+          fromLocation: booking.fromLocation,
+          toLocation: booking.toLocation,
+          travelDate: new Date(booking.travelDate).toISOString().split('T')[0],
+          seats: booking.selectedSeats,
+          totalPrice: booking.totalPrice,
+          bookingDate: booking.bookingDate,
+          paymentMethod: booking.paymentMethod
+        }));
+        setBookings(transformedBookings);
+        console.log(`Loaded ${transformedBookings.length} bookings from database`);
+      } else {
+        console.error("Failed to fetch bookings from database");
+        // Fallback to localStorage if database fails
+        const storedBookings = localStorage.getItem('busBookings');
+        if (storedBookings) {
+          setBookings(JSON.parse(storedBookings));
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching bookings from database:", error);
+      // Fallback to localStorage if database fails
+      const storedBookings = localStorage.getItem('busBookings');
+      if (storedBookings) {
+        setBookings(JSON.parse(storedBookings));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Save buses to localStorage whenever they change
   useEffect(() => {
@@ -93,6 +143,60 @@ const AdminDashboard = () => {
     setBuses(prev => prev.filter(bus => bus.id !== busId));
   };
 
+  const handleDeleteBooking = async (bookingId) => {
+    try {
+      // Delete from database
+      const response = await fetch(`http://localhost:5000/api/bus/delete/${bookingId}`, {
+        method: "DELETE"
+      });
+      
+      if (response.ok) {
+        console.log("Booking deleted from database successfully");
+        // Refresh bookings from database
+        fetchBookingsFromDatabase();
+      } else {
+        console.error("Failed to delete booking from database");
+        // Fallback to localStorage deletion
+        setBookings(prev => prev.filter(booking => booking.id !== bookingId));
+        localStorage.setItem('busBookings', JSON.stringify(bookings.filter(booking => booking.id !== bookingId)));
+      }
+    } catch (error) {
+      console.error("Error deleting booking from database:", error);
+      // Fallback to localStorage deletion
+      setBookings(prev => prev.filter(booking => booking.id !== bookingId));
+      localStorage.setItem('busBookings', JSON.stringify(bookings.filter(booking => booking.id !== bookingId)));
+    }
+  };
+
+  // Group bookings by date and then by bus
+  const groupBookingsByDateAndBus = () => {
+    const grouped = {};
+    
+    bookings.forEach(booking => {
+      const date = booking.travelDate;
+      
+      if (!grouped[date]) {
+        grouped[date] = {};
+      }
+      
+      const busKey = `${booking.busName} (${booking.busNumber})`;
+      
+      if (!grouped[date][busKey]) {
+        grouped[date][busKey] = {
+          busName: booking.busName,
+          busNumber: booking.busNumber,
+          fromLocation: booking.fromLocation,
+          toLocation: booking.toLocation,
+          bookings: []
+        };
+      }
+      
+      grouped[date][busKey].bookings.push(booking);
+    });
+    
+    return grouped;
+  };
+
   const availableAmenities = [
     'WiFi', 'Charging Point', 'Blanket', 'Water Bottle', 'TV', 
     'Snacks', 'Emergency Exit', 'Reading Light', 'Air Conditioning',
@@ -103,12 +207,20 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <div className="admin-header">
         <h1>Admin Dashboard</h1>
-        <button 
-          className="add-bus-btn"
-          onClick={() => setShowAddBusForm(!showAddBusForm)}
-        >
-          {showAddBusForm ? 'Cancel' : 'Add New Bus'}
-        </button>
+        <div className="header-buttons">
+          <button 
+            className="refresh-btn"
+            onClick={fetchBookingsFromDatabase}
+          >
+            🔄 Refresh Bookings
+          </button>
+          <button 
+            className="add-bus-btn"
+            onClick={() => setShowAddBusForm(!showAddBusForm)}
+          >
+            {showAddBusForm ? 'Cancel' : 'Add New Bus'}
+          </button>
+        </div>
       </div>
 
       {showAddBusForm && (
@@ -290,6 +402,62 @@ const AdminDashboard = () => {
           </form>
         </div>
       )}
+
+      <div className="bookings-section">
+        <h2>Bus Bookings ({bookings.length})</h2>
+        {loading ? (
+          <div className="loading-indicator">
+            <p>🔄 Loading bookings from database...</p>
+          </div>
+        ) : bookings.length === 0 ? (
+          <p className="no-bookings">No bookings yet.</p>
+        ) : (
+          <div className="bookings-by-date">
+            {Object.entries(groupBookingsByDateAndBus()).map(([date, buses]) => (
+              <div key={date} className="date-section">
+                <div className="date-header">
+                  <h3>📅 {new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+                  <span className="booking-count">{Object.values(buses).reduce((acc, bus) => acc + bus.bookings.length, 0)} bookings</span>
+                </div>
+                
+                {Object.entries(buses).map(([busKey, busData]) => (
+                  <div key={busKey} className="bus-section">
+                    <div className="bus-header-info">
+                      <h4>🚌 {busData.busName} ({busData.busNumber})</h4>
+                      <p className="route-info">{busData.fromLocation} → {busData.toLocation}</p>
+                    </div>
+                    
+                    <div className="seats-grid">
+                      {busData.bookings.map(booking => (
+                        <div key={booking.id} className="seat-booking-card">
+                          <div className="seat-info">
+                            <span className="seat-number">Seats: {booking.seats.join(', ')}</span>
+                            <span className="price">₹{booking.totalPrice}</span>
+                          </div>
+                          <div className="passenger-info">
+                            <p><strong>Name:</strong> {booking.name}</p>
+                            <p><strong>Phone:</strong> {booking.phone}</p>
+                            <p><strong>Booking ID:</strong> #{booking.id}</p>
+                            <p><strong>Booked on:</strong> {new Date(booking.bookingDate).toLocaleDateString()}</p>
+                          </div>
+                          <div className="booking-actions">
+                            <button 
+                              className="delete-booking-btn"
+                              onClick={() => handleDeleteBooking(booking.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="buses-list">
         <h2>Added Buses ({buses.length})</h2>

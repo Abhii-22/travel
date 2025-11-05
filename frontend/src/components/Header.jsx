@@ -58,7 +58,7 @@ const Header = () => {
     <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
       <nav className="main-nav">
         <Link to="/" className="logo" onClick={closeMobileMenu}>
-          <img src="/images/Bentley White.png" alt="BentleyEdu Logo" className="logo-image" />
+          <img src="" alt="travel booking" className="logo-image" />
         </Link>
         
         <button 

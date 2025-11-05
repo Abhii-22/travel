@@ -14,11 +14,7 @@ const BusBooking = () => {
   const [bookedSeats, setBookedSeats] = useState([]);
   const [showSeatLayout, setShowSeatLayout] = useState(false);
   const [bookingData, setBookingData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    age: "",
-    gender: "",
+    passengers: [],
     paymentMethod: "cash",
     cardNumber: "",
     cardExpiry: "",
@@ -542,10 +538,19 @@ const BusBooking = () => {
     }
     
     if (selectedSeats.includes(seatNumber)) {
-      setSelectedSeats(selectedSeats.filter(seat => seat !== seatNumber));
+      // Remove seat and its passenger data
+      const seatIndex = selectedSeats.indexOf(seatNumber);
+      const newSeats = selectedSeats.filter(seat => seat !== seatNumber);
+      const newPassengers = bookingData.passengers.filter((_, index) => index !== seatIndex);
+      setSelectedSeats(newSeats);
+      setBookingData({ ...bookingData, passengers: newPassengers });
     } else {
       if (selectedSeats.length < 6) {
-        setSelectedSeats([...selectedSeats, seatNumber]);
+        // Add seat and initialize passenger data
+        const newSeats = [...selectedSeats, seatNumber];
+        const newPassengers = [...bookingData.passengers, { seat: seatNumber }];
+        setSelectedSeats(newSeats);
+        setBookingData({ ...bookingData, passengers: newPassengers });
       } else {
         alert("You can select maximum 6 seats");
       }
@@ -554,6 +559,15 @@ const BusBooking = () => {
 
   const handleBookingChange = (e) => {
     setBookingData({ ...bookingData, [e.target.name]: e.target.value });
+  };
+
+  const handlePassengerChange = (index, field, value) => {
+    const updatedPassengers = [...bookingData.passengers];
+    if (!updatedPassengers[index]) {
+      updatedPassengers[index] = {};
+    }
+    updatedPassengers[index][field] = value;
+    setBookingData({ ...bookingData, passengers: updatedPassengers });
   };
 
   const handleBookingSubmit = async (e) => {
@@ -572,6 +586,20 @@ const BusBooking = () => {
       return;
     }
     
+    // Validate passenger data
+    if (bookingData.passengers.length !== selectedSeats.length) {
+      alert("Please fill details for all selected seats");
+      return;
+    }
+    
+    for (let i = 0; i < bookingData.passengers.length; i++) {
+      const passenger = bookingData.passengers[i];
+      if (!passenger.name || !passenger.email || !passenger.phone || !passenger.age || !passenger.gender) {
+        alert(`Please fill all details for seat ${passenger.seat}`);
+        return;
+      }
+    }
+    
     // Validate critical data before sending
     if (!searchData.travelDate) {
       alert("Please select a travel date");
@@ -583,13 +611,19 @@ const BusBooking = () => {
       return;
     }
     
+    // Use first passenger as primary contact
+    const primaryPassenger = bookingData.passengers[0];
+    
     const bookingInfo = {
-      // Passenger Details
-      name: bookingData.name,
-      email: bookingData.email,
-      phone: bookingData.phone,
-      age: bookingData.age,
-      gender: bookingData.gender,
+      // Primary Passenger Details (for database compatibility)
+      name: primaryPassenger.name,
+      email: primaryPassenger.email,
+      phone: primaryPassenger.phone,
+      age: primaryPassenger.age,
+      gender: primaryPassenger.gender,
+      
+      // All Passengers Details
+      passengers: bookingData.passengers,
       
       // Journey Details
       fromLocation: selectedBus.fromLocation,
@@ -655,9 +689,31 @@ const BusBooking = () => {
         // Get payment method from booking info to avoid undefined error
         const paymentMethodDisplay = paymentMethod || 'cash';
         
-        alert(`Mock Booking Confirmed!\n\nBooking ID: ${mockBookingId}\nTransaction ID: ${mockTransactionId}\nPayment Method: ${paymentMethodDisplay.toUpperCase()}\nTotal Amount: ₹${totalPrice}\n\nPayment Status: PAID\n\nSeats ${selectedSeats.join(', ')} temporarily booked!\n\n⚠️ Backend server not running - seats not permanently stored in database.\nPlease start the backend server to enable permanent seat locking.`);
+        // Save booking to localStorage for admin dashboard
+        const bookingForStorage = {
+          id: mockBookingId,
+          name: bookingData.name,
+          phone: bookingData.phone,
+          email: bookingData.email,
+          busName: selectedBus.busName,
+          busNumber: selectedBus.busNumber,
+          fromLocation: selectedBus.fromLocation,
+          toLocation: selectedBus.toLocation,
+          travelDate: searchData.travelDate,
+          seats: selectedSeats,
+          totalPrice: totalPrice,
+          bookingDate: new Date().toISOString(),
+          paymentMethod: paymentMethodDisplay
+        };
         
-        // Update available seats after mock booking (simulate temporary locking)
+        // Get existing bookings from localStorage
+        const existingBookings = JSON.parse(localStorage.getItem('busBookings') || '[]');
+        existingBookings.push(bookingForStorage);
+        localStorage.setItem('busBookings', JSON.stringify(existingBookings));
+        
+        alert(`Booking Confirmed!\n\nBooking ID: ${mockBookingId}\nTransaction ID: ${mockTransactionId}\nPayment Method: ${paymentMethodDisplay.toUpperCase()}\nTotal Amount: ₹${totalPrice}\n\nPayment Status: PAID\n\nSeats ${selectedSeats.join(', ')} booked successfully!`);
+        
+        // Update available seats after booking
         const currentAvailable = availableSeats[selectedBus.busNumber] || selectedBus.availableSeats;
         const newAvailable = currentAvailable - selectedSeats.length;
         setAvailableSeats(prev => ({
@@ -665,12 +721,12 @@ const BusBooking = () => {
           [selectedBus.busNumber]: newAvailable
         }));
         
-        // Add booked seats to the list (simulate temporary locking)
+        // Add booked seats to the list
         setBookedSeats(prev => [...prev, ...selectedSeats]);
         
-        console.log(`Mock booking: Seats ${selectedSeats.join(', ')} temporarily locked for ${selectedBus.busNumber} on ${searchData.travelDate}`);
+        console.log(`Booking confirmed: Seats ${selectedSeats.join(', ')} booked for ${selectedBus.busNumber} on ${searchData.travelDate}`);
         
-        // Reset form after mock booking
+        // Reset form after booking
         setSelectedBus(null);
         setShowSeatLayout(false);
         setSelectedSeats([]);
@@ -696,7 +752,30 @@ const BusBooking = () => {
       // Get payment method from booking info to avoid undefined error
       const paymentMethodDisplay = paymentMethod || 'cash';
       
-      alert(`Bus booking confirmed!\n\nBooking ID: ${data.bookingId}\nTransaction ID: ${data.transactionId}\nPayment Method: ${paymentMethodDisplay.toUpperCase()}\nTotal Amount: ₹${totalPrice}\n\nPayment Status: ${data.paymentStatus.toUpperCase()}\n\n✅ Seats ${selectedSeats.join(', ')} are now PERMANENTLY booked in database!`);
+      // Save booking to localStorage for admin dashboard
+        const bookingForStorage = {
+          id: data.bookingId,
+          name: primaryPassenger.name,
+          phone: primaryPassenger.phone,
+          email: primaryPassenger.email,
+          passengers: bookingData.passengers,
+          busName: selectedBus.busName,
+          busNumber: selectedBus.busNumber,
+          fromLocation: selectedBus.fromLocation,
+          toLocation: selectedBus.toLocation,
+          travelDate: searchData.travelDate,
+          seats: selectedSeats,
+          totalPrice: totalPrice,
+          bookingDate: new Date().toISOString(),
+          paymentMethod: paymentMethodDisplay
+        };
+        
+        // Get existing bookings from localStorage
+        const existingBookings = JSON.parse(localStorage.getItem('busBookings') || '[]');
+        existingBookings.push(bookingForStorage);
+        localStorage.setItem('busBookings', JSON.stringify(existingBookings));
+        
+        alert(`Bus booking confirmed!\n\nBooking ID: ${data.bookingId}\nTransaction ID: ${data.transactionId}\nPayment Method: ${paymentMethodDisplay.toUpperCase()}\nTotal Amount: ₹${totalPrice}\n\nPayment Status: ${data.paymentStatus.toUpperCase()}\n\n✅ Seats ${selectedSeats.join(', ')} are now PERMANENTLY booked in database!`);
       
       // Update available seats after successful booking
       const currentAvailable = availableSeats[selectedBus.busNumber] || selectedBus.availableSeats;
@@ -727,11 +806,7 @@ const BusBooking = () => {
       setShowSeatLayout(false);
       setSelectedSeats([]);
       setBookingData({ 
-        name: "", 
-        email: "", 
-        phone: "", 
-        age: "", 
-        gender: "",
+        passengers: [],
         paymentMethod: "cash",
         cardNumber: "",
         cardExpiry: "",
@@ -768,11 +843,7 @@ const BusBooking = () => {
       setShowSeatLayout(false);
       setSelectedSeats([]);
       setBookingData({ 
-        name: "", 
-        email: "", 
-        phone: "", 
-        age: "", 
-        gender: "",
+        passengers: [],
         paymentMethod: "cash",
         cardNumber: "",
         cardExpiry: "",
@@ -1134,71 +1205,83 @@ const BusBooking = () => {
               
               <form onSubmit={handleBookingSubmit} className="booking-form">
                 <h5>Passenger Details</h5>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Full Name:</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={bookingData.name}
-                      onChange={handleBookingChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email:</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={bookingData.email}
-                      onChange={handleBookingChange}
-                      required
-                    />
-                  </div>
+                <div className="passengers-container">
+                  {selectedSeats.map((seat, index) => (
+                    <div key={index} className="passenger-card">
+                      <h6>Passenger {index + 1} - Seat {seat}</h6>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>Full Name:</label>
+                          <input
+                            type="text"
+                            value={bookingData.passengers[index]?.name || ''}
+                            onChange={(e) => handlePassengerChange(index, 'name', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Email:</label>
+                          <input
+                            type="email"
+                            value={bookingData.passengers[index]?.email || ''}
+                            onChange={(e) => handlePassengerChange(index, 'email', e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>Phone:</label>
+                          <input
+                            type="tel"
+                            value={bookingData.passengers[index]?.phone || ''}
+                            onChange={(e) => handlePassengerChange(index, 'phone', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Age:</label>
+                          <input
+                            type="number"
+                            value={bookingData.passengers[index]?.age || ''}
+                            onChange={(e) => handlePassengerChange(index, 'age', e.target.value)}
+                            min="1"
+                            max="120"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>Gender:</label>
+                          <select 
+                            value={bookingData.passengers[index]?.gender || ''} 
+                            onChange={(e) => handlePassengerChange(index, 'gender', e.target.value)} 
+                            required
+                          >
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Phone:</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={bookingData.phone}
-                      onChange={handleBookingChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Age:</label>
-                    <input
-                      type="number"
-                      name="age"
-                      value={bookingData.age}
-                      onChange={handleBookingChange}
-                      min="1"
-                      max="120"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Gender:</label>
-                    <select name="gender" value={bookingData.gender} onChange={handleBookingChange} required>
-                      <option value="">Select Gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Payment Method:</label>
-                    <select name="paymentMethod" value={bookingData.paymentMethod} onChange={handleBookingChange} required>
-                      <option value="cash">Cash</option>
-                      <option value="credit_card">Credit Card</option>
-                      <option value="debit_card">Debit Card</option>
-                      <option value="upi">UPI</option>
-                      <option value="net_banking">Net Banking</option>
-                    </select>
+                
+                <div className="payment-section">
+                  <h6>Payment Method</h6>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <select name="paymentMethod" value={bookingData.paymentMethod} onChange={handleBookingChange} required>
+                        <option value="cash">Cash</option>
+                        <option value="credit_card">Credit Card</option>
+                        <option value="debit_card">Debit Card</option>
+                        <option value="upi">UPI</option>
+                        <option value="net_banking">Net Banking</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
